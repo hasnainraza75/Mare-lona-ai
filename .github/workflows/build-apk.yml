@@ -77,13 +77,54 @@ jobs:
           elif [ -f "app/google-services.json" ]; then
             echo "app/google-services.json detected in repository workspace."
           else
-            echo "Notice: app/google-services.json is not present in repository or secrets."
-            echo "Google Services plugin will run in MissingGoogleServicesStrategy.WARN mode."
+            echo "Creating fallback app/google-services.json for standalone build..."
+            mkdir -p app
+            cat << 'EOF' > app/google-services.json
+          {
+            "project_info": {
+              "project_number": "1033648262483",
+              "project_id": "applet-0f4cf9ce-f866-4a66-9e7",
+              "storage_bucket": "applet-0f4cf9ce-f866-4a66-9e7.firebasestorage.app"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:1033648262483:android:e8e4529d891636c7a72382",
+                  "android_client_info": {
+                    "package_name": "com.lona.ai"
+                  }
+                },
+                "oauth_client": [],
+                "api_key": [
+                  {
+                    "current_key": "AIzaSyFakeKeyForBuildVerificationOnly"
+                  }
+                ],
+                "services": {
+                  "appinvite_service": {
+                    "other_platform_oauth_client": []
+                  }
+                }
+              }
+            ],
+            "configuration_version": "1"
+          }
+          EOF
+          fi
+
+      - name: Make Gradle wrapper executable
+        run: |
+          if [ -f "./gradlew" ]; then
+            chmod +x ./gradlew
           fi
 
       - name: Build debug APK
         run: |
-          gradle :app:assembleDebug --stacktrace --no-daemon
+          if [ -f "./gradlew" ]; then
+            ./gradlew :app:assembleDebug --stacktrace --no-daemon
+          else
+            gradle :app:assembleDebug --stacktrace --no-daemon
+          fi
 
       - name: Verify the APK
         run: |

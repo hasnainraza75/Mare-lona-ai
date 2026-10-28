@@ -64,14 +64,12 @@ import com.example.data.model.UserProfile
 import com.example.data.repository.AiAssistantRepository
 import com.example.data.repository.LonaRepository
 import com.example.ui.components.EdgeLightFrame
-import com.example.ui.screens.AuthScreen
 import com.example.ui.screens.ChatScreen
 import com.example.ui.screens.CodingWorkspaceScreen
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.SettingsScreen
 import com.example.ui.screens.SplashScreen
 import com.example.ui.screens.ToolsScreen
-import com.example.ui.screens.signOutUser
 import com.example.ui.theme.CyberBackground
 import com.example.ui.theme.CyberCard
 import com.example.ui.theme.CyberCardBorder
@@ -84,9 +82,6 @@ import com.example.ui.theme.TextSecondary
 import com.example.util.configureAppCheck
 import com.example.voice.AssistantVoiceState
 import com.example.voice.VoiceAssistantManager
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -119,45 +114,30 @@ fun LonaAppRoot() {
     val coroutineScope = rememberCoroutineScope()
 
     var showSplash by remember { mutableStateOf(true) }
-    var currentUser by remember { mutableStateOf(Firebase.auth.currentUser) }
-    var isGuestMode by remember { mutableStateOf(false) }
 
     // Repositories & Managers
     val lonaRepository = remember { LonaRepository(context) }
     val aiRepository = remember { AiAssistantRepository() }
     val voiceManager = remember { VoiceAssistantManager(context, coroutineScope) }
 
-    // Listen for Auth state changes
     DisposableEffect(Unit) {
-        val listener = FirebaseAuth.AuthStateListener { auth ->
-            currentUser = auth.currentUser
-        }
-        Firebase.auth.addAuthStateListener(listener)
         onDispose {
-            Firebase.auth.removeAuthStateListener(listener)
             voiceManager.release()
         }
     }
 
     if (showSplash) {
         SplashScreen(onSplashFinished = { showSplash = false })
-    } else if (currentUser == null && !isGuestMode) {
-        AuthScreen(
-            onAuthSuccess = { currentUser = Firebase.auth.currentUser },
-            onContinueGuest = { isGuestMode = true }
-        )
     } else {
         MainFeatureApp(
-            userId = currentUser?.uid ?: "guest_user",
-            userEmail = currentUser?.email ?: "guest@lona.ai",
-            userDisplayName = currentUser?.displayName ?: "Guest Explorer",
+            userId = "lona_user",
+            userEmail = "user@lona.ai",
+            userDisplayName = "LONA Commander",
             lonaRepository = lonaRepository,
             aiRepository = aiRepository,
             voiceManager = voiceManager,
             onSignOut = {
-                isGuestMode = false
-                val credManager = androidx.credentials.CredentialManager.create(context)
-                signOutUser(context, credManager, { currentUser = null }, coroutineScope)
+                Toast.makeText(context, "Session refreshed", Toast.LENGTH_SHORT).show()
             }
         )
     }

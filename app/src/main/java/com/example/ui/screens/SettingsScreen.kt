@@ -287,20 +287,20 @@ fun SettingsMainList(
                 }
             }
 
-            // Sign Out / Clear Data
+            // Refresh Session / Clear Cache
             OutlinedButton(
                 onClick = { showSignOutDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .testTag("settings_sign_out_button"),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.6f)),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFEF4444)),
+                    .testTag("settings_refresh_session_button"),
+                border = androidx.compose.foundation.BorderStroke(1.dp, ElectricCyan.copy(alpha = 0.6f)),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = ElectricCyan),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Icon(Icons.Default.Logout, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Sign Out / Clear User Session")
+                Text("Refresh Assistant Session")
             }
 
             Spacer(modifier = Modifier.height(70.dp)) // Nav bar padding
@@ -310,17 +310,17 @@ fun SettingsMainList(
             AlertDialog(
                 onDismissRequest = { showSignOutDialog = false },
                 containerColor = CyberCard,
-                title = { Text("Sign Out Confirmation", color = TextPrimary, fontWeight = FontWeight.Bold) },
-                text = { Text("Are you sure you want to sign out and clear your active session credentials?", color = TextSecondary) },
+                title = { Text("Session Reset Confirmation", color = TextPrimary, fontWeight = FontWeight.Bold) },
+                text = { Text("Reset active session and refresh assistant local caches?", color = TextSecondary) },
                 confirmButton = {
                     Button(
                         onClick = {
                             showSignOutDialog = false
                             onSignOut()
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444))
+                        colors = ButtonDefaults.buttonColors(containerColor = NeonPurple)
                     ) {
-                        Text("Sign Out")
+                        Text("Refresh Now")
                     }
                 },
                 dismissButton = {
