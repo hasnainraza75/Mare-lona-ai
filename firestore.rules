@@ -1,0 +1,96 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId.size() > 0 &&
+             data.displayName is string && data.displayName.size() > 0 && data.displayName.size() <= 100 &&
+             data.email is string && data.email.size() > 0 && data.email.size() <= 150 &&
+             (!('photoUrl' in data) || (data.photoUrl is string && data.photoUrl.size() <= 500)) &&
+             (!('theme' in data) || (data.theme is string && data.theme.size() <= 50)) &&
+             (!('accentColor' in data) || (data.accentColor is string && data.accentColor.size() <= 20)) &&
+             (!('voiceName' in data) || (data.voiceName is string && data.voiceName.size() <= 50)) &&
+             (!('language' in data) || (data.language is string && data.language.size() <= 50)) &&
+             (!('selectedModel' in data) || (data.selectedModel is string && data.selectedModel.size() <= 50)) &&
+             (!('edgeLightEnabled' in data) || data.edgeLightEnabled is bool) &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidConversation(data) {
+      return data.id is string && data.id.size() > 0 &&
+             data.userId is string && data.userId.size() > 0 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.model is string && data.model.size() > 0 && data.model.size() <= 100 &&
+             (!('lastMessage' in data) || (data.lastMessage is string && data.lastMessage.size() <= 1000)) &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidChatMessage(data) {
+      return data.id is string && data.id.size() > 0 &&
+             data.userId is string && data.userId.size() > 0 &&
+             data.conversationId is string && data.conversationId.size() > 0 &&
+             (data.sender == 'user' || data.sender == 'assistant') &&
+             data.content is string && data.content.size() <= 50000 &&
+             (!('status' in data) || (data.status in ['sent', 'delivered', 'error'])) &&
+             data.timestamp is timestamp;
+    }
+
+    function isValidCodingProject(data) {
+      return data.id is string && data.id.size() > 0 &&
+             data.userId is string && data.userId.size() > 0 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.templateType is string && data.templateType.size() <= 50 &&
+             data.htmlCode is string && data.htmlCode.size() <= 100000 &&
+             (!('cssCode' in data) || (data.cssCode is string && data.cssCode.size() <= 100000)) &&
+             (!('jsCode' in data) || (data.jsCode is string && data.jsCode.size() <= 100000)) &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && incoming().userId == userId && isValidUserProfile(incoming());
+      allow update: if isOwner(userId) && incoming().userId == userId && isValidUserProfile(incoming());
+      allow delete: if isOwner(userId);
+
+      match /conversations/{conversationId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && incoming().userId == userId && isValidConversation(incoming());
+        allow update: if isOwner(userId) && incoming().userId == userId && isValidConversation(incoming());
+        allow delete: if isOwner(userId);
+
+        match /messages/{messageId} {
+          allow read: if isOwner(userId);
+          allow create: if isOwner(userId) && incoming().userId == userId && isValidChatMessage(incoming());
+          allow update: if isOwner(userId) && incoming().userId == userId && isValidChatMessage(incoming());
+          allow delete: if isOwner(userId);
+        }
+      }
+
+      match /projects/{projectId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && incoming().userId == userId && isValidCodingProject(incoming());
+        allow update: if isOwner(userId) && incoming().userId == userId && isValidCodingProject(incoming());
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

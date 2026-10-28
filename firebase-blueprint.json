@@ -1,0 +1,89 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile preferences and settings for LONA AI",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The Firebase Auth UID of the user" },
+        "displayName": { "type": "string", "description": "Display name of the user" },
+        "email": { "type": "string", "description": "Email address of the user" },
+        "photoUrl": { "type": "string", "description": "Optional profile avatar URL" },
+        "theme": { "type": "string", "description": "Selected UI theme name" },
+        "accentColor": { "type": "string", "description": "Selected neon accent color hex" },
+        "voiceName": { "type": "string", "description": "Chosen AI voice identifier" },
+        "language": { "type": "string", "description": "Chosen AI conversation language" },
+        "selectedModel": { "type": "string", "description": "Preferred Gemini model ID" },
+        "edgeLightEnabled": { "type": "boolean", "description": "Whether edge-lighting glow is active" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via server timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last updated timestamp via server timestamp" }
+      },
+      "required": ["userId", "displayName", "email", "createdAt", "updatedAt"]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "Chat session with LONA AI",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique session ID" },
+        "userId": { "type": "string", "description": "Firebase Auth UID of the user" },
+        "title": { "type": "string", "description": "Conversation title or topic" },
+        "model": { "type": "string", "description": "AI model used" },
+        "lastMessage": { "type": "string", "description": "Preview of last message text" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last message timestamp" }
+      },
+      "required": ["id", "userId", "title", "model", "createdAt", "updatedAt"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Individual message in a chat conversation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Message ID" },
+        "userId": { "type": "string", "description": "Firebase Auth UID" },
+        "conversationId": { "type": "string", "description": "Parent conversation ID" },
+        "sender": { "type": "string", "enum": ["user", "assistant"], "description": "Role of sender" },
+        "content": { "type": "string", "description": "Message text in Markdown" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "Message creation timestamp" },
+        "status": { "type": "string", "enum": ["sent", "delivered", "error"], "description": "Delivery status" }
+      },
+      "required": ["id", "userId", "conversationId", "sender", "content", "timestamp"]
+    },
+    "CodingProject": {
+      "title": "CodingProject",
+      "description": "Code generation workspace project with web preview",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Project ID" },
+        "userId": { "type": "string", "description": "Firebase Auth UID" },
+        "name": { "type": "string", "description": "Project name" },
+        "templateType": { "type": "string", "description": "Project template type" },
+        "htmlCode": { "type": "string", "description": "HTML source code" },
+        "cssCode": { "type": "string", "description": "CSS stylesheet code" },
+        "jsCode": { "type": "string", "description": "JavaScript code" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
+      },
+      "required": ["id", "userId", "name", "templateType", "htmlCode", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Individual user preferences, theme, and profile data"
+    },
+    "/users/{userId}/conversations/{conversationId}": {
+      "schema": "Conversation",
+      "description": "User's chat conversations"
+    },
+    "/users/{userId}/conversations/{conversationId}/messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Messages belonging to a conversation"
+    },
+    "/users/{userId}/projects/{projectId}": {
+      "schema": "CodingProject",
+      "description": "User's generated coding workspace projects"
+    }
+  }
+}

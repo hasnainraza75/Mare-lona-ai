@@ -1,0 +1,6 @@
+{
+  "name": "LONA AI",
+  "description": "LONA AI — Premium futuristic AI assistant with animated Earth, voice interaction, chat, coding workspace, and tools.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
